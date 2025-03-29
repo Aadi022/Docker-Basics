@@ -1,0 +1,38 @@
+#We we will define the services(containers) we want to start. So we will have nodejs service and mongodb service
+services:
+  #MongoDB services
+  mongo_db: 
+    container_name: db_container
+    #We have to specify the image we will be using in the mongodb container
+    image: mongo:latest
+    #If the container fails for some reason, then the container must be restarted always
+    restart: always
+    #Port mapping mongodb port
+    ports:
+      - 2717:27017
+    #Volume helps to keep the data persistent. If we don't specify the volume, then once we switch on the container and switch off the container, then all the data would be lost. mongodb by default stores all its data in /data/db
+    volumes:
+      - mongo_db:/data/db
+
+  
+  #Node API service
+  #Here I won't be specifying the container's name, so by default my container name will be my service name
+  api:
+    #Instead of pulling image from dockerhub, we will use build, as we have built the image of our Node.js application in Dockerfile
+    #Since Dockerfile is already present in the same directory as build, so . will look for the Dockerfile in the same directory
+    build: .
+    #exposing ports from container to our local machine
+    ports:
+     #4000 port on local machine will be mapped to 3000 port on container
+     - 4000:3000
+    environment:
+      PORT: 3000
+      #Since the container won't be able to recognize the localhost, so we have mentioned the mongodb service name which contains all the mongo info. We can also pass the mongodb container name
+      MONGODB_URI: mongodb://mongo_db:27017/Docker
+      #This service depends on the mong_db service, and it won't work before the mongo_db service has been started 
+    depends_on:
+      - mongo_db
+
+
+volumes:
+  mongo_db: {}
